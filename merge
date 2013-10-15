@@ -1,0 +1,23 @@
+# Set the working directory
+setwd("/Users/floradevlin/Documents/")
+
+# Load data
+main_table = read.csv(2013-08-20 PDT All signups, stringsAsFactors = FALSE, strip.white = TRUE, na.strings = c("NA",""))
+nrow(main_table)
+head(main_table)
+tail(main_table)
+
+# Data to merge
+data_to_merge = read.csv(User_Create_Free_Account_Results, stringsAsFactors = FALSE, strip.white = TRUE, na.strings = c("NA",""))
+nrow(data_to_merge)
+head(data_to_merge)
+tail(data_to_merge)
+
+# Merge
+mergedTable = merge(x = main_table, y = data_to_merge, by="member_id", all.x = TRUE)
+nrow(mergedTable)
+head(mergedTable)
+tail(mergedTable)
+
+# Export
+write.csv(mergedTable, file="merged_data.csv", row.names = FALSE, na = "")
