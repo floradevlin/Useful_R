@@ -1,0 +1,81 @@
+#input big dataset
+mergedTable = read.csv(file.choose(), stringsAsFactors = FALSE, strip.white = TRUE, na.strings = c("NA",""))
+bigguy = mergedTable
+rm(mergedTable)
+head(bigguy)
+
+#input activity data
+activitydata = read.csv(file.choose(), stringsAsFactors= FALSE, strip.white = TRUE, na.strings =c("NA",""))
+head(activitydata)
+
+#merge with activity data
+merge = merge(x = bigguy, y = activitydata, by="member_id", all.x = TRUE)
+
+#removing all NA values from the dataset
+merge[is.na(merge)] = 0
+
+#remove all NULL values from the dataset
+merge[ merge == "NULL" ] = 0
+head(merge)
+
+#check type of c(6:18)
+#class(merge$C4[1])
+#str(merge)
+
+#create a for loop to change from charcter to numeric
+merge[, 6] = as.numeric(merge[, 6])
+merge[, 22] = as.numeric(merge[, 22])
+
+for (i in 6:21) {
+  merge[, i] = as.numeric(merge[, i])
+}
+
+
+#create a sum of social networks
+merge$total_SN = rowSums(merge[, c(6:18)])
+
+#check and save
+head(merge)
+write.csv(merge, file= "final_freeuser.csv", row.names = FALSE, na = "")
+merge = read.csv(file.choose(), stringsAsFactors = FALSE, strip.white = TRUE, na.strings = c("NA",""))
+
+#remove other dataframes
+rm(activitydata)
+rm(bigguy)
+
+#get rid of all team members etc.
+str(merge)
+merge2 = subset(merge, is_in_organization ==0)
+head(merge2)
+rm(merge)
+
+#convert character created_date into a date
+merge2 = read.csv(file.choose(), stringsAsFactors = FALSE, strip.white = TRUE, na.strings = c("NA",""))
+merge2$created_date <- as.Date(merge2$created_date, "%Y-%m-%d")
+str(merge2)
+merge2 = subset(merge2, created_date < as.Date("2013-06-30", "%Y-%m-%d"))
+write.csv(merge2, file= "finalfinal_freeuser.csv", row.names = FALSE, na = "")
+
+#set working directory
+setwd("/Users/floradevlin/Documents/SEP_2013/26sep_freeuseranalysis")
+merge2 = read.csv(file.choose(), stringsAsFactors = FALSE, strip.white = TRUE, na.strings = c("NA",""))
+
+#count how many free users in each SN
+table=table(merge2$total_SN , merge2$days_of_activity)
+write.table(table, file= "table_1.csv", row.names = FALSE, na = "")
+count(merge2, "total_SN")
+
+#F:T by number of SN's
+merge2$billing_free_trial_start[ merge2$billing_free_trial_start != "0" ] = 1
+# check table(merge2$billing_free_trial_start)
+table2=table(merge2$total_SN, merge2$billing_free_trial_start)
+write.table(table2, file= "table_2.csv", row.names = FALSE, na = "")
+
+#F:T by activity
+table3=table(merge2$days_of_activity, merge2$billing_free_trial_start)
+write.table(table3, file= "table_3.csv", row.names = FALSE, na = "")
+
+
+#F:T by activity and SN's
+table4=table(merge2$days_of_activity, merge2$billing_free_trial_start, merge2$total_SN)
+write.table(table4, file="table_4.csv", row.names = FALSE, na = "")
