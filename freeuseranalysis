@@ -1,7 +1,5 @@
 #input big dataset
-mergedTable = read.csv(file.choose(), stringsAsFactors = FALSE, strip.white = TRUE, na.strings = c("NA",""))
-bigguy = mergedTable
-rm(mergedTable)
+bigguy = read.csv(file.choose(), stringsAsFactors = FALSE, strip.white = TRUE, na.strings = c("NA",""))
 head(bigguy)
 
 #input activity data
