@@ -1,0 +1,67 @@
+#Email lists of inactive free users
+
+# Set the working directory
+setwd("/Users/floradevlin/Documents/OCT_2013/11 Oct_ZOMBIE")
+
+# Load free users
+free = read.csv(file.choose(), stringsAsFactors = FALSE, strip.white = TRUE, na.strings = c("NA",""))
+head(free)
+tail(free)
+free=subset(free, select=c("member_id", "email"))
+
+# Load team members
+team = read.csv(file.choose(), stringsAsFactors = FALSE, strip.white = TRUE, na.strings = c("NA",""))
+head(team)
+tail(team)
+
+#Load activity1 and create total and get rid of all other rows. 
+activity1 = read.csv(file.choose(), stringsAsFactors = FALSE, strip.white = TRUE, na.strings = c("NA",""))
+activity1$total_activity1 = rowSums(activity1[, c(2:43)])
+activity1 = subset(activity1, select= c("member_id", "total_activity1"))
+head(activity1)
+tail(activity1)
+
+#same story for activity2
+activity2 = read.csv(file.choose(), stringsAsFactors = FALSE, strip.white = TRUE, na.strings = c("NA",""))
+activity2$total_activity2 = rowSums(activity2[, c(2:43)])
+activity2 = subset(activity2, select= c("member_id", "total_activity2"))
+head(activity2)
+tail(activity2)
+
+# Merge numbero uno- get rid of team members. Basically we want to keep everyone who didn't have a match. so the column will be NULL
+freenoteam = merge(x=free, y=team, by="member_id", all.x = TRUE)
+freenoteam$payment_member_plan_id[is.na(freenoteam$payment_member_plan_id)] = 0
+table(freenoteam$payment_member_plan_id)
+freenoteam = subset(freenoteam, payment_member_plan_id== 0)
+head(freenoteam)
+tail(freenoteam)
+nrow(freenoteam)
+
+# Merge numero dos- add in all the activity data
+freeactivity = merge(x = freenoteam, y = activity1, by="member_id", all.x = TRUE)
+head(freeactivity)
+freeactivity = merge(x= freeactivity, y=activity2, by = "member_id", all.x = TRUE)
+head(freeactivity)
+
+#drop unecessary columns, turn NA's into 0's, create a total activity column! only keep if total activity=0
+freeactivity = subset(freeactivity, select= c("member_id", "email", "total_activity1", "total_activity2"))
+freeactivity$total_activity1[is.na(freeactivity$total_activity1)] = 0
+freeactivity$total_activity2[is.na(freeactivity$total_activity2)] = 0
+freeactivity$total_activity = rowSums(freeactivity [, c("total_activity1", "total_activity2")])
+freeactivity = subset(freeactivity, total_activity==0)
+head(freeactivity)
+nrow(freeactivity)
+
+#random number generator and order
+freeactivity$random= runif(5042233, 0, 1)
+freeactivity = freeactivity[order(freeactivity$random), ]
+head(freeactivity)
+tail(freeactivity)
+
+#sample 15,000
+mysample= freeactivity[1:30000, ]
+head(mysample)
+nrow(mysample)
+
+# Export. wooooooooooooooooooo, time to go home
+write.csv(mysample, file="nonactivefreeusers.csv", row.names = FALSE, na = "")
